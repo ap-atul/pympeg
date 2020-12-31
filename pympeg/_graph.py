@@ -1,6 +1,7 @@
 """ Simple directed graph implementation """
 
 class Graph:
+	""" Stores the connection between the filters """
 	def __init__(self):
 		self.graph = dict()
 
