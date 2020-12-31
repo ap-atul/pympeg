@@ -5,6 +5,7 @@ each node may contain set of arguments and labels (input and output)
 
 from pympeg._exceptions import *
 from pympeg._util import gen_label
+from pympeg._graph import Graph
 
 
 class Node(object):
@@ -23,18 +24,26 @@ class Node(object):
 		return self._in_label
 
 
-class IONode():
+class IONode(Node):
 	""" Independant node """
 	
 	def __init__(self, name=None):
+		super().__init__()
 		if name is None or not isinstance(name, str):
 			raise InputOutputFileMissingException
 
 		self._name = name
 
+	def __str__(self):
+		return " file: %s " % self._name
+
 	@property
 	def params(self):
 		return self._name
+	
+	def set_output_label(self, label):
+		self._in_label = label
+		return self
 
 
 class FilterNode(Node):
@@ -94,13 +103,4 @@ class FilterNode(Node):
 	def set_outputs(self, outputs):
 		self._outputs = outputs
 		return self
-
-
-if __name__ == "__main__":
-	node =  FilterNode("trim", {"st":2, "d": 4}, 1, 2)
-	print(str(node.outputs[0].in_label))
-	print(node.in_label)
-	print(node.out_label)
-	print(node.filter)
-	print(node.params)
 
