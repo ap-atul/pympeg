@@ -1,5 +1,6 @@
 from pympeg._node import *
 from pympeg._graph import *
+from pympeg._util import *
 
 
 class ffmpeg():
@@ -38,6 +39,10 @@ class ffmpeg():
 	def graph(self, source):
 		return self._filter_graph.traverse(source)
 
+	def run(self):
+		path = self._filter_graph.traverse(self._source)
+		return get_str_from_graph(path)
+
 
 ffmpeg = ffmpeg()
 input1 = ffmpeg.input("input.mp4")
@@ -45,8 +50,4 @@ filter1 = ffmpeg.filter(input1, filter_name="trim", params={"st": 2, "d": 5})
 filter2 = ffmpeg.filter(filter1, filter_name="clip", params={"q":3})
 output = ffmpeg.output(filter2, "output.mp4")
 
-
-path = ffmpeg.graph(input1)
-for p in path:
-	print(p)
-
+print(ffmpeg.run())

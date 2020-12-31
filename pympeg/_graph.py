@@ -49,7 +49,5 @@ class Graph:
 				if s in graph:
 					for neighbour in graph[s]:
 						queue.append(neighbour)
-				else:
-					print("not is graph", s)
 
 		return path

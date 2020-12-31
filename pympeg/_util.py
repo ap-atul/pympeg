@@ -24,3 +24,19 @@ def get_str_from_filter(node):
 
 	return ''.join(string)
 
+def get_str_from_graph(graph):
+	string = list()
+	output = graph.pop()
+
+	string.append("ffmpeg -y")
+	string.append("-i %s" % graph.pop(0).params)
+	string.append('-filter_complex"')
+	for node in graph:
+		string.append(get_str_from_filter(node))
+	string.append('"')
+	string.append("%s" % output.params)
+
+	return " ".join(string)
+
+
+
