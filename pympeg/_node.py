@@ -2,30 +2,35 @@
 Node classes that acts as a start -> intermediate -> output nodes in the filter graph, 
 each node may contain set of arguments and labels (input and output)
 """
-
-from pympeg._exceptions import *
 from pympeg._util import gen_label
-from pympeg._graph import Graph
+from pympeg._exceptions import *
 
 
-class Node(object):
-	""" Used to create labels and identify each node """
-	
-	def __init__(self):
-		self._in_label = "[%s]" % gen_label()
-		self._out_label = "[%s]" % gen_label()
+#
+# class Node(object):
+# 	""" Used to create labels and identify each node """
+#
+# 	def __init__(self):
+# 		self._in_label = "[%s]" % gen_label()
+# 		self._out_label = "[%s]" % gen_label()
+#
+# 	@property
+# 	def out_label(self):
+# 		return self._out_label
+#
+# 	@property
+# 	def in_label(self):
+# 		return self._in_label
+#
+# 	def set_in_label(self, label):
+# 		self._in_label = label
+#
+# 	def set_out_label(self, label):
+# 		self._out_label = label
 
-	@property
-	def out_label(self):
-		return self._out_label
 
-	@property
-	def in_label(self):
-		return self._in_label
-
-
-class IONode(Node):
-	""" Independant node """
+class IONode:
+	""" Independent node """
 	
 	def __init__(self, name=None):
 		super().__init__()
@@ -33,24 +38,28 @@ class IONode(Node):
 			raise InputOutputFileMissingException
 
 		self._name = name
+		self._out_label = None
 
 	def __str__(self):
-		return " file: %s " % self._name
+		return " file: %s; %s" % (self._name, self._out_label)
 
 	@property
 	def params(self):
 		return self._name
-	
-	def set_output_label(self, label):
-		self._in_label = label
+
+	@property
+	def out_label(self):
+		return self._out_label
+
+	def set_out_label(self, label):
+		self._out_label = label
 		return self
 
 
-class FilterNode(Node):
+class FilterNode:
 	""" Every filter will consists of a input and output label """
 	
-	def __init__(self, filter_name=None, params=None, inputs=1, outputs=1):
-		super().__init__()
+	def __init__(self, filter_name=None, params=None, outputs=1):
 
 		# checking for filter name and its type
 		if filter_name is None or not isinstance(filter_name, str):
@@ -62,12 +71,12 @@ class FilterNode(Node):
 
 		self._filter_name = filter_name
 		self._params = params
-		self._inputs = inputs
-		self._outputs = outputs
+		self._inputs = set()
+		self._outputs = set("[%s]" % gen_label() for _ in range(outputs))
 
 	def __str__(self):
-		return "  %s (%s, %s )  " % (self._filter_name, self.in_label, self.out_label)
-		
+		return "%s %s %s" % (self._filter_name, self._inputs, self._outputs)
+
 	@property
 	def filter(self):
 		return self._filter_name
@@ -78,7 +87,17 @@ class FilterNode(Node):
 
 	@property
 	def outputs(self):
-		return [FilterNode(self._filter_name, self.params).set_input_label(self.out_label) for _ in range(self._outputs)]
+		return self._outputs
+
+	@property
+	def inputs(self):
+		return self._inputs
+
+	def add_input(self, label):
+		self._inputs.add(label)
+
+	def add_output(self, label):
+		self._outputs.add(label)
 
 	def set_filter_name(self, filter_name):
 		self._filter_name = filter_name
@@ -88,14 +107,6 @@ class FilterNode(Node):
 		self._params = params
 		return self
 
-	def set_input_label(self, label):
-		self._in_label = label
-		return self
-
-	def set_output_label(self, label):
-		self._out_label = label
-		return self
-
 	def set_inputs(self, inputs):
 		self._inputs = inputs
 		return self
@@ -103,4 +114,3 @@ class FilterNode(Node):
 	def set_outputs(self, outputs):
 		self._outputs = outputs
 		return self
-

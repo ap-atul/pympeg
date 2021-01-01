@@ -7,36 +7,40 @@ def gen_label(length=5):
 
 
 def get_str_from_params(params: dict):
-	string = list()
-	keys = list(params.keys())
-	length = len(keys)
+    result = list()
+    keys = list(params.keys())
+    length = len(keys)
 
-	string.append("%s=%s" % (keys[0], params[keys[0]]))
-	for i in range(1, length):
-		string.append(":%s=%s" % (keys[i], params[keys[i]]))
+    result.append("%s=%s" % (keys[0], params[keys[0]]))
+    for i in range(1, length):
+        result.append(":%s=%s" % (keys[i], params[keys[i]]))
 
-	return ''.join(string)
+    return ''.join(result)
 
 
 def get_str_from_filter(node):
-	string = list()
-	string.append("%s %s=%s %s;" % (node.in_label, node.filter, get_str_from_params(node.params), node.out_label))
+    result = list()
+    result.append("%s %s=%s %s;" % (node.inputs, node.filter, get_str_from_params(node.params), node.outputs))
 
-	return ''.join(string)
+    return ' '.join(result)
+
+
+def get_str_from_ionode(node):
+    result = list()
+    result.append("-i %s" % node.params)
+    return ' '.join(result)
+
 
 def get_str_from_graph(graph):
-	string = list()
-	output = graph.pop()
+    result = list()
+    output = graph.pop()
 
-	string.append("ffmpeg -y")
-	string.append("-i %s" % graph.pop(0).params)
-	string.append('-filter_complex"')
-	for node in graph:
-		string.append(get_str_from_filter(node))
-	string.append('"')
-	string.append("%s" % output.params)
+    result.append("ffmpeg -y")
+    result.append("-i %s" % graph.pop(0).params)
+    result.append('-filter_complex"')
+    for node in graph:
+        result.append(get_str_from_filter(node))
+    result.append('"')
+    result.append("%s" % output.params)
 
-	return " ".join(string)
-
-
-
+    return " ".join(result)
