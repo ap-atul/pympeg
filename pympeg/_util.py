@@ -20,7 +20,16 @@ def get_str_from_params(params: dict):
 
 def get_str_from_filter(node):
     result = list()
-    result.append("%s %s=%s %s;" % (node.inputs, node.filter, get_str_from_params(node.params), node.outputs))
+
+    for inp in node.inputs:
+        result.append("%s" % inp)
+
+    result.append("%s=%s" % (node.filter, get_str_from_params(node.params)))
+
+    for out in node.outputs:
+        result.append("%s" % out)
+
+    result.append(";")
 
     return ' '.join(result)
 

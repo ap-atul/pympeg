@@ -39,6 +39,7 @@ class IONode:
 
 		self._name = name
 		self._out_label = None
+		self._inputs = set()
 
 	def __str__(self):
 		return " file: %s; %s" % (self._name, self._out_label)
@@ -50,6 +51,13 @@ class IONode:
 	@property
 	def out_label(self):
 		return self._out_label
+
+	@property
+	def inputs(self):
+		return self._inputs
+
+	def add_input(self, label):
+		self._inputs.add(label)
 
 	def set_out_label(self, label):
 		self._out_label = label
