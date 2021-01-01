@@ -1,14 +1,22 @@
+def get_str_from_params(params: dict):
+    result = list()
+    keys = list(params.keys())
+    length = len(keys)
+
+    result.append("%s=%s" % (keys[0], params[keys[0]]))
+    for i in range(1, length):
+        result.append(":%s=%s" % (keys[i], params[keys[i]]))
+
+    return ''.join(result)
+
 def get_str_from_filter(node):
 	result = list()
 
 	for inp in node.inputs:
 		result.append(inp)
 
-	result.append("%s=" % node.filter)
+	result.append("%s=%s" % (node.name, get_str_from_params(node.params)))
 
-	for arg, val in node.params.items():
-		result.append("%s:%s" % (arg, val))
-	
 	for out in node.outputs:
 		result.append(out)
 
