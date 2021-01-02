@@ -2,6 +2,7 @@ from ._builder import Stream
 from ._exceptions import *
 from ._node import InputNode, FilterNode, Label, OutputNode, stream
 
+__all__ = ["input", "filter", "output", "run"]
 s = Stream()
 
 
@@ -101,6 +102,3 @@ def run(caller):
 	graph = s.graph()
 	for node in graph:
 		print(str(node))
-
-
-__all__ = ["input", "filter", "output", "run"]

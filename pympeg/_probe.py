@@ -3,6 +3,8 @@ import subprocess
 
 from ._exceptions import ProbeException
 
+__all__ = ['probe']
+
 
 def probe(filename, cmd='ffprobe', timeout=None):
 	"""Runs the ffprobe on the given file and outputs in json format """
@@ -23,4 +25,3 @@ def probe(filename, cmd='ffprobe', timeout=None):
 	return json.loads(out.decode('utf-8'))
 
 
-__all__ = ['probe']
