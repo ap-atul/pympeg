@@ -1,3 +1,15 @@
+from random import sample
+import string
+
+def gen_labels(n=1):
+	length = 3
+
+	if n == 1:
+		return ''.join(sample(string.ascii_letters, length))
+
+	return [''.join(sample(string.ascii_letters, length)) for _ in range(n)]
+
+
 def get_str_from_params(params: dict):
     result = list()
     keys = list(params.keys())
