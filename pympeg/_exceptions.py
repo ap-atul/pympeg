@@ -6,7 +6,7 @@ class FilterParamsMissing(Exception):
 	"""
 
 	def __str__(self):
-		return "Filter node has missing arguments. \n Use like :: " \
+		return "Filter filter has missing arguments. \n Use like :: " \
 			   """filter(filter_name="trim", params={"start": 10, "duration": 20})"""
 
 
@@ -24,7 +24,7 @@ class FileNameMissing(Exception):
 
 class TypeMissing(Exception):
 	"""
-	When the type of the node is missing from the important functions, this
+	When the type of the filter is missing from the important functions, this
 	exception will be raised along with the message
 	"""
 	pass

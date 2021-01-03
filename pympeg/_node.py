@@ -104,7 +104,7 @@ class FilterNode:
 		return ''.join(result)
 
 	@property
-	def filter(self):
+	def name(self):
 		return self._filter
 
 	@property
@@ -134,6 +134,63 @@ class FilterNode:
 	def set_outputs(self, outputs):
 		self._outputs = outputs
 		return
+
+	def __getitem__(self, item):
+		return self._outputs[item]
+
+
+class GlobalNode:
+	def __init__(self, inputs, args, outputs):
+		self._args = args
+		self._inputs = list()
+		self._outputs = list()
+
+		if isinstance(inputs, list):
+			self._inputs = inputs
+		self._inputs = [inputs]
+
+		if isinstance(outputs, list):
+			self._outputs = outputs
+		self._outputs = [outputs]
+
+	def __repr__(self):
+		result = list()
+		result.append("@global %s :input=" % self._args)
+
+		for inp in self._inputs:
+			result.append("%s " % str(inp))
+
+		result.append(" :output=")
+		for out in self._outputs:
+			result.append("%s " % str(out))
+
+		return ''.join(result)
+
+	@property
+	def name(self):
+		return self._args
+
+	@property
+	def inputs(self):
+		return self.inputs
+
+	@property
+	def outputs(self):
+		return self.outputs
+
+	def add_input(self, label):
+		self._inputs.append(label)
+
+	def add_output(self, label):
+		self._outputs.append(label)
+
+	def set_inputs(self, inputs):
+		self._inputs = inputs
+		return self
+
+	def set_outputs(self, outputs):
+		self._outputs = outputs
+		return self
 
 	def __getitem__(self, item):
 		return self._outputs[item]

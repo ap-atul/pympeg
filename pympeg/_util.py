@@ -9,3 +9,34 @@ def gen_labels(n=1):
 		return ''.join(sample(string.ascii_letters, length))
 
 	return [''.join(sample(string.ascii_letters, length)) for _ in range(n)]
+
+
+def get_str_from_params(params: dict):
+	""" Returns string from the parameters """
+	result = list()
+	keys = list(params.keys())
+	length = len(keys)
+
+	result.append("%s=%s" % (keys[0], params[keys[0]]))
+	for i in range(1, length):
+		result.append(":%s=%s" % (keys[i], params[keys[i]]))
+
+	return ''.join(result)
+
+
+def get_str_from_filter(filter):
+	""" Returns the string from the filter """
+	result = list()
+
+	for inp in filter.inputs:
+		result.append("[%s]" % inp.label)
+
+	result.append(" %s=%s " % (filter.name, get_str_from_params(filter.params)))
+
+	result.append(",setpts=PTS-STARTPTS")
+	for out in filter.outputs:
+		result.append("[%s]" % out.label)
+
+	result.append(";")
+
+	return ''.join(result)
