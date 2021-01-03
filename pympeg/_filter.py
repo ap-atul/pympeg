@@ -14,7 +14,8 @@ def _check_arg_type(args):
 		if (
 				isinstance(arg, InputNode) or
 				isinstance(arg, FilterNode) or
-				isinstance(arg, Label)
+				isinstance(arg, Label) or
+				isinstance(arg, list)
 		):
 			flag = True
 			break
@@ -55,9 +56,34 @@ def _get_nodes_from_graph(graph):
 	return input_nodes, filter_nodes, output_nodes
 
 
+def _no_filter_command(input_nodes, output_node, cmd="ffmpeg"):
+	"""
+	Cases when there is no filter. Mostly when conversion is required.
+
+	Example
+	-------
+	ex: convert .mp4 to .wav
+		ffmpeg -y -i example.mp4 example.wav
+	"""
+	result = list()
+
+	result.append(cmd)
+	result.append(" -y")
+	for inp in input_nodes:
+		result.append(" -i %s " % inp.name)
+
+	result.append(" %s" % output_node.pop().name)
+	return ''.join(result)
+
+
 def _get_command_from_graph(graph, cmd="ffmpeg"):
 	result = list()
 	input_nodes, filter_nodes, output_node = _get_nodes_from_graph(graph)
+
+	# means that there is no filter
+	if len(filter_nodes) == 0:
+		return _no_filter_command(input_nodes, output_node)
+
 	last_filter_node = filter_nodes.pop()
 
 	result.append(cmd)
@@ -127,7 +153,7 @@ def output(*args, **kwargs):
 	node = OutputNode(name=kwargs["name"])
 	inputs = args[0]
 
-	if not isinstance(inputs, FilterNode):
+	if not (isinstance(inputs, FilterNode) or isinstance(inputs, InputNode)):
 		raise TypeMissing("Output requires an filter or input type argument")
 
 	if isinstance(inputs, list):
@@ -143,7 +169,7 @@ def output(*args, **kwargs):
 @stream()
 def run(caller):
 	if not isinstance(caller, OutputNode):
-		raise Exception
+		raise OutputNodeMissingInRun
 
 	graph = s.graph()
 	command = _get_command_from_graph(graph)
