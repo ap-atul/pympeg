@@ -1,7 +1,7 @@
 ### pympeg (python + ffmpeg)
 
-```console
-DISCLAIMER :: there are lots of underscores (_) in this project (a lot ;) 
+```diff
+- DISCLAIMER :: there are lots of underscores (_) in this project (a lot ;) 
 ```
 
 A simple to use ffmpeg binding in python. Simple filters command can be implemented using simple functions without worrying about the ffmpeg syntax.
