@@ -33,8 +33,24 @@ def get_str_from_filter(filter):
 
 	result.append(" %s=%s " % (filter.name, get_str_from_params(filter.params)))
 
-	result.append(",setpts=PTS-STARTPTS")
 	for out in filter.outputs:
+		result.append("[%s]" % out.label)
+
+	result.append(";")
+
+	return ''.join(result)
+
+
+def get_str_from_global(node):
+	""" Returns the string from the global node """
+	result = list()
+
+	for inp in node.inputs:
+		result.append("[%s]" % inp.label)
+
+	result.append("%s" % node.name)
+
+	for out in node.outputs:
 		result.append("[%s]" % out.label)
 
 	result.append(";")

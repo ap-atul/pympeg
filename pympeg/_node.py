@@ -1,3 +1,4 @@
+from ._exceptions import *
 from ._util import gen_labels
 
 
@@ -11,6 +12,9 @@ class Label:
 	def __repr__(self):
 		return "[%s]" % self._label
 
+	def __eq__(self, other):
+		return self.label == other.label
+
 	@property
 	def label(self):
 		return self._label
@@ -21,15 +25,31 @@ class Label:
 
 
 class InputNode:
-	def __init__(self, name=None):
+	def __init__(self, name, output):
+		if name is None or output is None:
+			raise InputParamsMissing
+
 		self._name = name
+		self._output = str(output)
 
 	def __repr__(self):
-		return "@input %s" % self._name
+		return "@input %s" % self._name + " :output [%s]" % self._output
 
 	@property
 	def name(self):
 		return self._name
+
+	@property
+	def audio(self):
+		return self._output + ":a"
+
+	@property
+	def video(self):
+		return self._output + ":v"
+
+	@property
+	def outputs(self):
+		return "%s" % self._output
 
 	def set_name(self, name):
 		self._name = name
@@ -140,18 +160,22 @@ class FilterNode:
 
 
 class GlobalNode:
-	def __init__(self, inputs, args, outputs):
+	def __init__(self, inputs=None, args=None, outputs=None):
 		self._args = args
 		self._inputs = list()
 		self._outputs = list()
 
 		if isinstance(inputs, list):
 			self._inputs = inputs
-		self._inputs = [inputs]
+
+		if inputs is not None:
+			self._inputs = [inputs]
 
 		if isinstance(outputs, list):
 			self._outputs = outputs
-		self._outputs = [outputs]
+
+		if outputs is not None:
+			self._outputs = [outputs]
 
 	def __repr__(self):
 		result = list()
@@ -172,11 +196,11 @@ class GlobalNode:
 
 	@property
 	def inputs(self):
-		return self.inputs
+		return self._inputs
 
 	@property
 	def outputs(self):
-		return self.outputs
+		return self._outputs
 
 	def add_input(self, label):
 		self._inputs.append(label)
@@ -207,4 +231,4 @@ def stream_operator(stream_classes=None, name=None):
 
 
 def stream():
-	return stream_operator(stream_classes=[InputNode, FilterNode, OutputNode], name=None)
+	return stream_operator(stream_classes=[Label, InputNode, FilterNode, OutputNode, GlobalNode], name=None)

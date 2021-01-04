@@ -10,7 +10,7 @@ class FilterParamsMissing(Exception):
 			   """filter(filter_name="trim", params={"start": 10, "duration": 20})"""
 
 
-class FileNameMissing(Exception):
+class InputParamsMissing(Exception):
 	"""
 	When name of the file is missing while initialization of the IONode,
 	this exception will be raised asking for the missing name of the file.
@@ -18,7 +18,7 @@ class FileNameMissing(Exception):
 	"""
 
 	def __str__(self):
-		return "File name is missing for the IONode. \n Use like :: " \
+		return "File name is missing for the input function. \n Use like :: " \
 			   """ pympeg.input(name="example.mp4") """
 
 

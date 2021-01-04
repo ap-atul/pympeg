@@ -1,21 +1,22 @@
 from ._builder import Stream
 from ._exceptions import *
-from ._node import InputNode, FilterNode, Label, OutputNode, stream
-from ._util import get_str_from_filter
+from ._node import InputNode, FilterNode, Label, OutputNode, GlobalNode, stream
+from ._util import get_str_from_filter, get_str_from_global
 
-__all__ = ["input", "filter", "output", "run"]
+__all__ = ["input", "filter", "output", "arg", "run"]
 s = Stream()
 
 
 def _check_arg_type(args):
 	flag = False
 
-	for arg in args:
+	for arg_ in args:
 		if (
-				isinstance(arg, InputNode) or
-				isinstance(arg, FilterNode) or
-				isinstance(arg, Label) or
-				isinstance(arg, list)
+				isinstance(arg_, InputNode) or
+				isinstance(arg_, FilterNode) or
+				isinstance(arg_, GlobalNode) or
+				isinstance(arg_, Label) or
+				isinstance(arg_, list)
 		):
 			flag = True
 			break
@@ -23,22 +24,28 @@ def _check_arg_type(args):
 	return flag
 
 
-def _get_label_param(inputs):
-	if isinstance(inputs, Label):
-		return inputs
+def _get_label_param(value):
+	if isinstance(value, Label):
+		return value
 
-	if isinstance(inputs, FilterNode):
-		return inputs[0]
+	if isinstance(value, str):
+		return Label(value)
 
-	if isinstance(inputs, InputNode):
-		return Label(str(s.count - 1))
+	if isinstance(value, FilterNode):
+		return value[0]
+
+	if isinstance(value, InputNode):
+		return Label(value.outputs)
+
+	if isinstance(value, GlobalNode):
+		return value[0]
 
 	else:
 		raise TypeMissing("Filter requires an filter or input type argument")
 
 
 def _get_nodes_from_graph(graph):
-	input_nodes, filter_nodes, output_nodes = list(), list(), list()
+	input_nodes, filter_nodes, global_nodes, output_nodes = list(), list(), list(), list()
 
 	for node in graph:
 		if isinstance(node, InputNode):
@@ -50,10 +57,13 @@ def _get_nodes_from_graph(graph):
 		if isinstance(node, OutputNode):
 			output_nodes.append(node)
 
-	node_len = len(input_nodes) + len(filter_nodes) + len(output_nodes)
+		if isinstance(node, GlobalNode):
+			global_nodes.append(node)
+
+	node_len = len(input_nodes) + len(filter_nodes) + len(global_nodes) + len(output_nodes)
 	assert node_len == len(graph)
 
-	return input_nodes, filter_nodes, output_nodes
+	return input_nodes, filter_nodes, global_nodes, output_nodes
 
 
 def _no_filter_command(input_nodes, output_node, cmd="ffmpeg"):
@@ -78,7 +88,7 @@ def _no_filter_command(input_nodes, output_node, cmd="ffmpeg"):
 
 def _get_command_from_graph(graph, cmd="ffmpeg"):
 	result = list()
-	input_nodes, filter_nodes, output_node = _get_nodes_from_graph(graph)
+	input_nodes, filter_nodes, global_nodes, output_node = _get_nodes_from_graph(graph)
 
 	# means that there is no filter
 	if len(filter_nodes) == 0:
@@ -94,11 +104,15 @@ def _get_command_from_graph(graph, cmd="ffmpeg"):
 	for filter_ in filter_nodes:
 		result.append(get_str_from_filter(filter_))
 
+	# adding global nodes
+	for global_ in global_nodes:
+		result.append(get_str_from_global(global_))
+
 	# last filter should not have a semicolon at the end
 	result.append(get_str_from_filter(last_filter_node).replace(";", ""))
 	result.append('"')
 
-	for out in last_filter_node.outputs:
+	for out in output_node[0].inputs:
 		result.append(' -map "[%s]"' % out.label)
 
 	# output will be single
@@ -110,10 +124,10 @@ def _get_command_from_graph(graph, cmd="ffmpeg"):
 @stream()
 def input(name):
 	if name is None:
-		raise FileNameMissing("File name required in input function")
+		raise InputParamsMissing("File name required in input function")
 
 	# creating a file input filter
-	node = InputNode(name)
+	node = InputNode(name, s.count)
 
 	# adding to the stream
 	s.add(node).count += 1
@@ -129,7 +143,13 @@ def filter(*args, **kwargs):
 	if len(kwargs) == 0:
 		raise FilterParamsMissing
 
-	inputs = args[0]
+	# if explicit inputs are given skip caller
+	if "inputs" in kwargs:
+		inputs = kwargs["inputs"]
+	# accept caller
+	else:
+		inputs = args[0]
+
 	filter_node = FilterNode(**kwargs)
 
 	if isinstance(inputs, list):
@@ -153,14 +173,42 @@ def output(*args, **kwargs):
 	node = OutputNode(name=kwargs["name"])
 	inputs = args[0]
 
-	if not (isinstance(inputs, FilterNode) or isinstance(inputs, InputNode)):
-		raise TypeMissing("Output requires an filter or input type argument")
-
 	if isinstance(inputs, list):
 		for inp in inputs:
 			node.add_input(_get_label_param(inp))
 	else:
 		node.add_input(_get_label_param(inputs))
+
+	s.add(node)
+	return node
+
+
+@stream()
+def arg(caller=None, args=None, outputs=None, inputs=None):
+	node = GlobalNode(args=args)
+
+	# if inputs is there don't check caller
+	if inputs is not None:
+		if isinstance(inputs, list):
+			for inp in inputs:
+				node.add_input(_get_label_param(inp))
+		else:
+			node.add_input(_get_label_param(inputs))
+
+	# if inputs is absent
+	else:
+		if isinstance(caller, list):
+			for inp in caller:
+				node.add_input(_get_label_param(inp))
+		else:
+			node.add_input(_get_label_param(caller))
+
+	# adding outputs, if none then 1 output is created by default
+	if isinstance(outputs, list):
+		for out in outputs:
+			node.add_output(_get_label_param(out))
+	else:
+		node.add_output(_get_label_param(outputs))
 
 	s.add(node)
 	return node
@@ -174,3 +222,8 @@ def run(caller):
 	graph = s.graph()
 	command = _get_command_from_graph(graph)
 	print(command)
+
+
+@stream()
+def graph(caller):
+	return s.graph()
