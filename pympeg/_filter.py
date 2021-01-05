@@ -5,6 +5,8 @@ linked using the Label that identifies the stream and builds the
 filter and is understandable by the ffmpeg command line.
 """
 
+from subprocess import Popen, PIPE, STDOUT
+
 from ._builder import Stream
 from ._exceptions import *
 from ._node import (InputNode, FilterNode, Label,
@@ -450,7 +452,19 @@ def run(caller):
 
     graph = s.graph()
     command = _get_command_from_graph(graph)
-    print(command)
+    process = Popen(args=command,
+                    stdout=PIPE,
+                    stderr=STDOUT,
+                    shell=True)
+    
+    out, err = process.communicate()
+    code = process.poll()
+
+    if code:
+        raise Error('ffmpeg', out, err)
+
+    return out, err
+
 
 
 @stream()
