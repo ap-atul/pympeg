@@ -1,6 +1,11 @@
 from . import _filter
 from . import _probe
-from ._filter import input, filter, output, arg, graph, run
+from ._filter import (
+        input, filter, 
+        output, arg, 
+        graph, run, 
+        option
+        )
 from ._probe import probe
 
 """ Usable functions """
