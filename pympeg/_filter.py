@@ -1,13 +1,35 @@
+"""
+Creates complex and simple filters based on following functions
+builds a chain of functions each containing a type of Node that
+linked using the Label that identifies the stream and builds the
+filter and is understandable by the ffmpeg command line.
+"""
+
 from ._builder import Stream
 from ._exceptions import *
 from ._node import InputNode, FilterNode, Label, OutputNode, GlobalNode, stream
 from ._util import get_str_from_filter, get_str_from_global
 
-__all__ = ["input", "filter", "output", "arg", "run"]
+__all__ = ["input", "filter", "output", "arg", "run", "graph"]
 s = Stream()
 
 
 def _check_arg_type(args):
+	"""
+	Only allow the following calling arguments to create a chain.
+	The functions should be only callable by the following objects
+	and the argument will be parsed as a node to create the chain.
+
+	Parameters
+	----------
+	args : list
+		mostly caller of the function
+
+	Returns
+	-------
+	bool
+		passed/ fail criteria
+	"""
 	flag = False
 
 	for arg_ in args:
@@ -25,6 +47,21 @@ def _check_arg_type(args):
 
 
 def _get_label_param(value):
+	"""
+	Generate label based on the type of the object.
+	This label gets added as the input to the node in
+	the chain and creates a graph like structure.
+
+	Parameters
+	----------
+	value : object
+		type of the object that is deduced below
+
+	Returns
+	-------
+	Label
+		label to link with the node from ip - > op
+	"""
 	if isinstance(value, Label):
 		return value
 
@@ -45,6 +82,22 @@ def _get_label_param(value):
 
 
 def _get_nodes_from_graph(graph):
+	"""
+	Separates the types of the nodes. Since, the links are
+	directly attached to the node via the Label object and only
+	the label matters at the end of the command, so distributing
+	the nodes based on types helps create a command line argument.
+
+	Parameters
+	----------
+	graph : Sized, list-type
+		output at the end of the run function. A list of all nodes
+
+	Returns
+	-------
+	tuple
+		distribution of all the nodes via their types
+	"""
 	input_nodes, filter_nodes, global_nodes, output_nodes = list(), list(), list(), list()
 
 	for node in graph:
@@ -87,6 +140,28 @@ def _no_filter_command(input_nodes, output_node, cmd="ffmpeg"):
 
 
 def _get_command_from_graph(graph, cmd="ffmpeg"):
+	"""
+	Generates the command line for the graph, this command is
+	then ran using subprocess which will raise any exception or
+	error on the ffmpeg side.
+
+	Parameters
+	----------
+	graph : list-type
+		nodes from the end of the run function
+	cmd : str
+		ffmpeg default command, may changed based on alias
+
+	Returns
+	-------
+	str
+		string of the command to execute.
+
+	Raises
+	-------
+	FFmpegException
+		raised when the subprocess function fails.
+	"""
 	result = list()
 	input_nodes, filter_nodes, global_nodes, output_node = _get_nodes_from_graph(graph)
 
@@ -123,6 +198,26 @@ def _get_command_from_graph(graph, cmd="ffmpeg"):
 
 @stream()
 def input(name):
+	"""
+	Creates the input node. Can create multiple input nodes.
+	Requires the named argument to execute.
+		ffmpeg -i input_example.mp4 -i input.mp3 ...
+
+	Parameters
+	----------
+	name : str
+		name and path of the file
+
+	Returns
+	-------
+	InputNode
+		returns the input type of the node, which can recall this function
+
+	Raises
+	-------
+	InputParamsMissing
+		when the named argument (name) is missing.
+	"""
 	if name is None:
 		raise InputParamsMissing("File name required in input function")
 
@@ -137,6 +232,30 @@ def input(name):
 
 @stream()
 def filter(*args, **kwargs):
+	"""
+	Generates the filter based on the input caller, the input caller
+	can be another filter node or any input node. Creates a Filter Node
+	with input from the caller object.
+
+	Parameters
+	----------
+	args : list-type
+		input args
+	kwargs : dict
+		name input args
+
+	Returns
+	-------
+	FilterNode
+		filter created for the input or another filter
+
+	Raises
+	-------
+	TypeMissing
+		caller is of some unknown type
+	FilterParamsMissing
+		filter was not able to create
+	"""
 	if not _check_arg_type(args):
 		raise TypeMissing("Filter requires an filter or input type argument")
 
@@ -164,6 +283,30 @@ def filter(*args, **kwargs):
 
 @stream()
 def output(*args, **kwargs):
+	"""
+	Generates an OutputNode for the input filters or InputNodes
+	The object gets parsed and the inputs are used for the map
+	parameters in the ffmpeg command line
+
+		ffmpeg .... -map "[label]" ... output.mp4
+
+	Parameters
+	----------
+	args : list-type
+		input args
+	kwargs : dict
+		name input args
+
+	Returns
+	-------
+	OutputNode
+		output node for the filter or the input caller
+
+	Raises
+	-------
+	TypeMissing
+		caller is of some unknown type
+	"""
 	if not _check_arg_type(args):
 		raise TypeMissing("Output requires an filter or input type argument")
 
@@ -185,6 +328,37 @@ def output(*args, **kwargs):
 
 @stream()
 def arg(caller=None, args=None, outputs=None, inputs=None):
+	"""
+	Generates the GlobalNode for any filter types that cannot be
+	created by the filter function. One of such filter is the concat.
+	Other functions that do not follow the same syntax rules like filters.
+	Then any function can be created and the command line argument can
+	be directly stated using the names arguments (args), with inputs and outputs
+
+	Examples
+	--------
+		inputs : [0:v][0:a][3:v][3:a]
+
+		ffmpeg.arg(inputs=["0:v", "0:a", "3:v", "3:a"], outputs=["video", "audio"],
+					args="concat=2:a=1:v=1")
+
+		OP: [0:v][0:a][3:v][3:a] concat=2:a=1:v=1 [video][audio];
+	Parameters
+	----------
+	caller : any
+		input for the Global Node
+	args : str
+		complete command with arguments can have any structure
+	outputs : any
+		outputs for the Global Node
+	inputs : any
+		inputs for the Global Node
+
+	Returns
+	-------
+	GlobalNode
+		global node that can have any structure with predefined function attributes.
+	"""
 	node = GlobalNode(args=args)
 
 	# if inputs is there don't check caller
@@ -216,6 +390,21 @@ def arg(caller=None, args=None, outputs=None, inputs=None):
 
 @stream()
 def run(caller):
+	"""
+	Parses the entire chain of nodes, isolates the nodes based on types
+	and generate a ffmpeg style command that will be run in the subprocess.
+	Logs and errors are returned and final output can be created.
+
+	Parameters
+	----------
+	caller : OutputNode
+		calling node, mostly an OutputNode
+
+	Returns
+	-------
+	tuple
+		log, error of just yield values
+	"""
 	if not isinstance(caller, OutputNode):
 		raise OutputNodeMissingInRun
 
@@ -225,5 +414,6 @@ def run(caller):
 
 
 @stream()
-def graph(caller):
+def graph(*args):
+	""" Returns the chain of the nodes, printable for representations """
 	return s.graph()

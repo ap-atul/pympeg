@@ -20,5 +20,22 @@ A through documentation will be available. Currently examples will be published.
 3. It can verify some syntax errors but not all since ffmpeg is very huge project.
 4. Still, suggestions are welcome.
 
-## Under development
+Four functions to work with:
+```python
+pympeg.input(name="example.mp4")
+```
+```python
+pympeg.filter(intputs=any, filter_name="trim", params={"start": 3, "duration": 10})
+```
+```python
+pympeg.arg(caller=any, args="concat=n=1", outputs=["audio", "video"]) # inputs= is available
+```
+```python
+pympeg.run() # default adds overwrite file option (ffmpeg -y )
+```
+```python
+graph = pympeg.graph() # returns a list of nodes, use print to get representation
+```
+
+## Contribute
 Yes! all/any contributions are welcome.
