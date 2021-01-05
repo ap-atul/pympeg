@@ -57,3 +57,18 @@ class OutputNodeMissingInRun(Exception):
 
     def __str__(self):
         return "Output function is needed to called before the run function."
+
+
+class FFmpegException(Exception):
+    """
+    When an error is thrown by the ffmpeg subprocess from the run function
+    this exception would be raised that will print all the stdout of the
+    ffmpeg output.
+    """
+    def __init__(self, cmd, stdout, stderr):
+        self._stdout = stdout
+        self._stderr = stderr
+
+    def __str__(self):
+        return '%s %s' % (self._stdout, self._stderr)
+

@@ -431,7 +431,7 @@ def option(*args, tag=None, name=None, output=None):
 
 
 @stream()
-def run(caller):
+def run(caller, display_command=True):
     """
     Parses the entire chain of nodes, isolates the nodes based on types
     and generate a ffmpeg style command that will be run in the subprocess.
@@ -452,16 +452,21 @@ def run(caller):
 
     graph = s.graph()
     command = _get_command_from_graph(graph)
+
+    if display_command:
+        print(command)
+
     process = Popen(args=command,
-                    stdout=PIPE,
-                    stderr=STDOUT,
-                    shell=True)
+                   shell=True,
+                   stdout=PIPE,
+                   stderr=STDOUT,
+                   universal_newlines=True)
     
     out, err = process.communicate()
     code = process.poll()
 
     if code:
-        raise Error('ffmpeg', out, err)
+        raise FFmpegException('ffmpeg', out, err)
 
     return out, err
 
