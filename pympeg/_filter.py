@@ -119,7 +119,7 @@ def _get_nodes_from_graph(graph):
 	return input_nodes, filter_nodes, global_nodes, output_nodes
 
 
-def _no_filter_command(input_nodes, output_node, cmd="ffmpeg"):
+def _no_filter_command(input_nodes, output_nodes, cmd="ffmpeg"):
 	"""
 	Cases when there is no filter. Mostly when conversion is required.
 
@@ -135,7 +135,8 @@ def _no_filter_command(input_nodes, output_node, cmd="ffmpeg"):
 	for inp in input_nodes:
 		result.append(" -i %s " % inp.name)
 
-	result.append(" %s" % output_node.pop().name)
+	for out in output_nodes:
+		result.append(" %s " % out.name)
 	return ''.join(result)
 
 
@@ -163,11 +164,11 @@ def _get_command_from_graph(graph, cmd="ffmpeg"):
 		raised when the subprocess function fails.
 	"""
 	result = list()
-	input_nodes, filter_nodes, global_nodes, output_node = _get_nodes_from_graph(graph)
+	input_nodes, filter_nodes, global_nodes, output_nodes = _get_nodes_from_graph(graph)
 
 	# means that there is no filter
 	if len(filter_nodes) == 0:
-		return _no_filter_command(input_nodes, output_node)
+		return _no_filter_command(input_nodes, output_nodes)
 
 	last_filter_node = filter_nodes.pop()
 
@@ -187,11 +188,11 @@ def _get_command_from_graph(graph, cmd="ffmpeg"):
 	result.append(get_str_from_filter(last_filter_node).replace(";", ""))
 	result.append('"')
 
-	for out in output_node[0].inputs:
-		result.append(' -map "[%s]"' % out.label)
-
-	# output will be single
-	result.append(" %s" % output_node[0].name)
+	# multiple output nodes
+	for out in output_nodes:
+		for inp in out.inputs:
+			result.append(' -map "[%s]"' % inp.label)
+		result.append(" %s " % out.name)
 
 	return ''.join(result)
 
@@ -241,7 +242,7 @@ def filter(*args, **kwargs):
 	----------
 	args : list-type
 		input args
-	kwargs : dict
+	kwargs : dict-type
 		name input args
 
 	Returns

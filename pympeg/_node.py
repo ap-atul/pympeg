@@ -109,6 +109,13 @@ class OutputNode:
 	filter outputs that are needed to define the incoming streams from the filters
 
 		ffmpeg ... filter[output1][output2]" -map "[output1]" -map "[output1]" out.mp4
+
+	Attributes
+	----------
+	_name : str
+		name of the output file
+	_inputs : list
+		list of the inputs for the node
 	"""
 
 	def __init__(self, name=None, inputs=None):
@@ -158,7 +165,7 @@ class FilterNode:
 
 	Attributes
 	----------
-	_filter : str
+	_filter : str-type
 		name of the filter
 	_params : dict
 		parameters for the filter
