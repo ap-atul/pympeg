@@ -14,8 +14,14 @@ from ._node import (InputNode, FilterNode, Label,
 from ._util import get_str_from_filter, get_str_from_global
 
 
-__all__ = ["input", "filter", "output", "arg", "run", "graph", "option"]
+__all__ = ["input", "filter", "output", "arg", "run", "graph", "option",
+            "concat", "init"]
 s = Stream()
+
+
+def init():
+    global s
+    s = Stream()
 
 
 def _check_arg_type(args):

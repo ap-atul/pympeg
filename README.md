@@ -7,18 +7,8 @@
 A simple to use ffmpeg binding in python. Simple filters command can be implemented using simple functions without worrying about the ffmpeg syntax.
 Useful in situation when you know how to construct ffmpeg command but don't want it to look ugly with for loops. 
 
-## Existence
-* We are creating the alternative to the entire ffmpeg command line experience, but a rather easy way to put the same syntax in python.
-* This library encourages the user to use the ffmpeg documentation to come up with a query and then use the functions we provide to put it neatly.
 
 ## Usage
-A through documentation will be available. Currently examples will be published.
-
-0. To use this library, you'll need to knowledge to construct filters and then structure the functions.
-1. Complex filters can be connected.
-2. If a very deep filter combination is to be created, it will get messy too.
-3. It can verify some syntax errors but not all since ffmpeg is very huge project.
-4. Still, suggestions are welcome.
 
 Four functions to work with:
 ```python
@@ -36,6 +26,34 @@ pympeg.run() # default adds overwrite file option (ffmpeg -y )
 ```python
 graph = pympeg.graph() # returns a list of nodes, use print to get representation
 ```
+
+## Examples
+1. Adding filters
+```python
+
+out  = (
+        pympeg.input(name="example.mp4")
+        .filter(filter_name="trim", params={"start": 2, "duration": 10})
+        .output(name="output.mp4")
+        .run()
+)
+
+command generated :: ffmpeg -i example.mp4  -y -filter_complex "[0] trim=start=2:duration=10 [nyQ]" -map "[nyQ]" output.mp4 
+```
+
+2. Implementing simple file conversion
+```python
+
+out = (
+    pympeg.input(name="example.mp4")
+    .output(name="example.wav")
+    .run()
+)
+
+command generated :: ffmpeg -i example.mp4 example.wav 
+```
+
+Note: Use ```pympeg.init()``` when using multiple run commands
 
 ## Contribute
 Yes! all/any contributions are welcome.

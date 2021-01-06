@@ -1,10 +1,11 @@
 from . import _filter
 from . import _probe
 from ._filter import (
-        input, filter, 
-        output, arg, 
-        graph, run, 
-        option
+        input, filter,
+        output, arg,
+        graph, run,
+        option, concat,
+        init
         )
 from ._probe import probe
 
