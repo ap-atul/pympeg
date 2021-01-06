@@ -1,9 +1,5 @@
 ### pympeg (python + ffmpeg)
 
-```diff
-- DISCLAIMER :: there are lots of underscores (_) in this project (a lot ;) 
-```
-
 A simple to use ffmpeg binding in python. Simple filters command can be implemented using simple functions without worrying about the ffmpeg syntax.
 Useful in situation when you know how to construct ffmpeg command but don't want it to look ugly with for loops. 
 
