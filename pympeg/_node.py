@@ -261,11 +261,11 @@ class GlobalNode:
         Attributes
         ----------
         _args : str
-                the complete command
+            the complete command
         _inputs : list
-                input labels for the command
+            input labels for the command
         _outputs : list
-                output labels for the command
+            output labels for the command
         """
 
     def __init__(self, inputs=None, args=None, outputs=None):
@@ -273,17 +273,17 @@ class GlobalNode:
         self._inputs = list()
         self._outputs = list()
 
-        if isinstance(inputs, list):
-            self._inputs = inputs
-
         if inputs is not None:
-            self._inputs = [inputs]
-
-        if isinstance(outputs, list):
-            self._outputs = outputs
+            if isinstance(inputs, list):
+                self._inputs = inputs
+            else:
+                self._inputs = [inputs]
 
         if outputs is not None:
-            self._outputs = [outputs]
+            if isinstance(outputs, list):
+                self._outputs = outputs
+            else:
+                self._outputs = [outputs]
 
     def __repr__(self):
         """ Pretty print """

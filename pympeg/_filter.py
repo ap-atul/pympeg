@@ -416,6 +416,26 @@ def arg(caller=None, args=None, outputs=None, inputs=None):
 
 @stream()
 def option(*args, tag=None, name=None, output=None):
+    """
+    Adds a option node before the filters if any, this options can be 
+    anything ffmpeg option defined as the tag and the name of the option
+    Options like -f for file and other supported options.
+
+        ffmpeg -f ffmetadata
+
+        pympeg.option(tag="-f", name="ffmetadata", output="meta")
+
+    Parameters
+    ----------
+    args : any
+        arguments, caller object
+    tag : str
+        name of the option
+    name : str
+        the complete command
+    output : any
+        the output label for the node
+    """
     outputs = list()
 
     if isinstance(output, list):
@@ -425,6 +445,70 @@ def option(*args, tag=None, name=None, output=None):
         outputs.append(_get_label_param(output))
 
     node = OptionNode(tag, name, output)
+    s.add(node)
+
+    return node
+
+
+@stream()
+def concat(*args, inputs:list, outputs:int):
+    """
+    Concat filter combines two or more streams into a single stream or a
+    multiple streams video and audio. The input for the concat should be
+    multiple of 2 (video1, audio1, video2, audio2) in this fashion if the
+    outputs are 2, else it can have any number of imput.
+
+    Ex 1: Cooncatenating two videos with audio
+
+        ffmpeg -i ... "[0:v][0:a][1:v][2:v]concat=2:a=1:v=1[video][audio]"
+
+        pympeg.concat(inputs=[inp.video, inp.audio, inp2.video, inp2.audio],
+                        outputs=2)
+
+    Ex 2: Concatenating two videos
+
+        ffmeg -i ... "[inp][inp2]concat=2[video]"
+        pympeg.concat(inputs=[inp, inp2], outputs=1)
+
+    Parameters
+    ----------
+    args : any
+        calling object
+    inputs : list
+        inputs for the concat filter can be labels or strings
+    outputs : int
+        no of outputs for the concat ideally one or two outputs are allowed.
+    """
+    if inputs is None:
+        raise Exception("Concat requires inputs argument.")
+
+    if outputs > 2:
+        raise Exception("Concat does not have output greater than two.")
+
+    if outputs > 1:
+        if len(inputs) % 2 != 0:
+            raise Exception("Concat requires inputs of length multiple of 2 input outputs is greater than 2.")
+
+    _inputs = list()
+    if inputs is not None:
+        if isinstance(inputs, list):
+            for inp in inputs:
+                _inputs.append(_get_label_param(inp))
+        else:
+            _inputs.append(_get_label_param(inputs))
+
+    if outputs > 1:
+        _outputs = list()
+        for i in range(2):
+            _outputs.append(Label())
+
+        command = "concat=%s:v=%s:a=%s" % (len(_inputs), 1, 1)
+
+    else:
+        command = "concat=%s" % len(_inputs)
+
+    # concat filter has different syntax so using Global Node
+    node = GlobalNode(inputs=inputs, args=command, outputs=outputs)
     s.add(node)
 
     return node
@@ -456,12 +540,13 @@ def run(caller, display_command=True):
     if display_command:
         print(command)
 
+    return
     process = Popen(args=command,
                    shell=True,
                    stdout=PIPE,
                    stderr=STDOUT,
                    universal_newlines=True)
-    
+
     out, err = process.communicate()
     code = process.poll()
 
