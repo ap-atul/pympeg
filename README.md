@@ -34,7 +34,8 @@ out  = (
         .run()
 )
 
-command generated :: ffmpeg -i example.mp4  -y -filter_complex "[0] trim=start=2:duration=10 [nyQ]" -map "[nyQ]" output.mp4 
+command generated :: ffmpeg -i example.mp4  -y -filter_complex \
+"[0] trim=start=2:duration=10 [nyQ]" -map "[nyQ]" output.mp4 
 ```
 
 2. Implementing simple file conversion
