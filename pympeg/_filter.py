@@ -515,6 +515,56 @@ def concat(*args, inputs:list, outputs:int):
 
 
 @stream()
+def crop(*args, out_w:str, out_h:str, x="0", y="0", keep_aspect=1):
+    """
+    The arguments for the crop function takes in str, since crop function can
+    have complex equation and refernce to the input stream via ffmpeg convecction
+    so not using int/float types directly.
+
+    Also default keep_aspect of ffmpeg is 0, whereas I'm using 1 for making the 
+    ratios of the input and the output same for more favourable use cases.
+
+    FFMPEG  :  https://ffmpeg.org/ffmpeg-filters.html#toc-crop
+
+    Parameters
+    ----------
+    args : any
+        input for the filter
+    out_w : str
+        output stream width
+    out_h : str
+        output stream height
+    x : str
+        x positiion to place the video, default 0
+    y : str
+        y position to place the video, default 0
+    keep_aspect : int
+        if 1 aspect ratios is kept same between the ip and op, else not
+    """
+    if not _check_arg_type(args):
+        raise TypeMissing("Filter requires an filter or input type argument")
+
+    _inputs = list()
+    _inputs.append(_get_label_param(args[0]))
+
+    node = FilterNode(
+                inputs=_inputs,
+                filter_name="crop",
+                params={
+                    "out_w": out_w,
+                    "out_h": out_h,
+                    "x": x,
+                    "y": y,
+                    "keep_aspect": keep_aspect
+                }
+            )
+
+    s.add(node)
+
+    return node
+
+
+@stream()
 def run(caller, display_command=True):
     """
     Parses the entire chain of nodes, isolates the nodes based on types

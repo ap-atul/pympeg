@@ -29,4 +29,13 @@ operations = (
     .run()
 )
 
+pympeg.init()
+operations = (
+        pympeg.input(name="example_01.mp4")
+    .filter(filter_name="trim", params={"start": 1, "duration": 5})
+    .crop(out_w="1920", out_h="720")
+    .output(name="out.mp4")
+    .run()
+)
+
 
