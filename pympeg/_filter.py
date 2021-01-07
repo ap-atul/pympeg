@@ -515,7 +515,7 @@ def concat(*args, inputs:list, outputs:int):
 
 
 @stream()
-def crop(*args, out_w:str, out_h:str, x="0", y="0", keep_aspect=1):
+def crop(*args, w:str, h:str, x="0", y="0", keep_aspect=1):
     """
     The arguments for the crop function takes in str, since crop function can
     have complex equation and refernce to the input stream via ffmpeg convecction
@@ -530,9 +530,9 @@ def crop(*args, out_w:str, out_h:str, x="0", y="0", keep_aspect=1):
     ----------
     args : any
         input for the filter
-    out_w : str
+    w : str
         output stream width
-    out_h : str
+    h : str
         output stream height
     x : str
         x positiion to place the video, default 0
@@ -540,6 +540,11 @@ def crop(*args, out_w:str, out_h:str, x="0", y="0", keep_aspect=1):
         y position to place the video, default 0
     keep_aspect : int
         if 1 aspect ratios is kept same between the ip and op, else not
+
+    Returns
+    -------
+    FilterNode
+        filter node is created
     """
     if not _check_arg_type(args):
         raise TypeMissing("Filter requires an filter or input type argument")
@@ -551,11 +556,51 @@ def crop(*args, out_w:str, out_h:str, x="0", y="0", keep_aspect=1):
                 inputs=_inputs,
                 filter_name="crop",
                 params={
-                    "out_w": out_w,
-                    "out_h": out_h,
+                    "w": w,
+                    "h": h,
                     "x": x,
                     "y": y,
                     "keep_aspect": keep_aspect
+                }
+            )
+
+    s.add(node)
+
+    return node
+
+
+@stream()
+def scale(*args, w:str, h:str):
+    """
+    Creates a scale filter with basic arguments with output width and height.
+    Takes in a single input and one output.
+
+    Parameters
+    ----------
+    args : any
+        caller object
+    w : str
+        output width of the video
+    h : str
+        output height of the video
+
+    Returns
+    -------
+    FilterNode
+        filter node is created
+    """
+    if not _check_arg_type(args):
+        raise TypeMissing("Filter requires an filter or input type argument")
+
+    _inputs = list()
+    _inputs.append(_get_label_param(args[0]))
+
+    node = FilterNode(
+                inputs=_inputs,
+                filter_name="scale",
+                params={
+                    "w": w,
+                    "h": h
                 }
             )
 
