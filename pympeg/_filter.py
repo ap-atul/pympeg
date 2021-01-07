@@ -222,7 +222,7 @@ def _get_command_from_graph(graph, cmd="ffmpeg"):
     for out in output_nodes:
         for inp in out.inputs:
             result.append(' -map "[%s]"' % inp.label)
-            result.append(" %s " % out.name)
+        result.append(" %s " % out.name)
 
     return ''.join(result)
 
@@ -505,10 +505,10 @@ def concat(*args, inputs:list, outputs:int):
         for i in range(outputs):
             _outputs.append(Label())
 
-        command = "concat=n=%s:v=%s:a=%s" % (len(_inputs), 1, 1)
+        command = "concat=n=%d:v=%d:a=%d" % (len(_inputs) / 2, 1, 1)
 
     else:
-        command = "concat=n=%s" % len(_inputs)
+        command = "concat=n=%d" % len(_inputs)
 
     # concat filter has different syntax so using Global Node
     node = GlobalNode(inputs=_inputs, args=command, outputs=_outputs)
@@ -657,7 +657,7 @@ def run(caller, display_command=True):
 
 
 @stream()
-def setpts(*args, expr="PTS-STARTPTS"):
+def setpts(*args, expr="setpts=PTS-STARTPTS"):
     """
     Function to set the presentation timestamps of the input frames based on the
     expression according to the docs can have some expression that parses the

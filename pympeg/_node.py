@@ -171,8 +171,8 @@ class FilterNode:
             parameters for the filter
     _inputs : list-type
             inputs Label type
-    _outputs : list-type
-            outputs Label type
+    _outputs : int
+            count of outputs
     """
 
     def __init__(self, filter_name=None, params=None, inputs=None, outputs=1):

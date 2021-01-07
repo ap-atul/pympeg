@@ -18,6 +18,12 @@ def two():
     )
 
 
+from multiprocessing import Process
+a = Process(target=one, args=())
+b = Process(target=two, args=())
+a.start()
+b.start()
+
 
 pympeg.init()
 
@@ -33,9 +39,20 @@ pympeg.init()
 operations = (
         pympeg.input(name="example_01.mp4")
     .filter(filter_name="trim", params={"start": 1, "duration": 5})
-    .crop(out_w="1920", out_h="720")
+    .crop(w="1920", h="720")
     .output(name="out.mp4")
     .run()
 )
+
+pympeg.init()
+operations = (
+     pympeg.input(name="example_01.mp4")
+    .filter(filter_name="trim", params={"start": 1, "duration": 5})
+    .setpts()
+    .scale(w="1920", h="-1")
+    .crop(w="1920", h="720")
+    .output(name="out.mp4")
+)
+graph = operations.graph()
 
 
