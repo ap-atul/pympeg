@@ -5,7 +5,8 @@ from ._filter import (
         output, arg,
         graph, run,
         option, concat,
-        init
+        init, scale, crop,
+        setpts
         )
 from ._probe import probe
 

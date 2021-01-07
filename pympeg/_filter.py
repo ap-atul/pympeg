@@ -15,11 +15,12 @@ from ._util import get_str_from_filter, get_str_from_global
 
 
 __all__ = ["input", "filter", "output", "arg", "run", "graph", "option",
-            "concat", "init"]
+            "concat", "init", "scale", "crop", "setpts"]
 s = Stream()
 
 
 def init():
+    """ Re-initializes the stream object """
     global s
     s = Stream()
 
@@ -465,6 +466,8 @@ def concat(*args, inputs:list, outputs:int):
     multiple of 2 (video1, audio1, video2, audio2) in this fashion if the
     outputs are 2, else it can have any number of imput.
 
+    FFMPEG :: https://ffmpeg.org/ffmpeg-filters.html#toc-concat
+
     Ex 1: Cooncatenating two videos with audio
 
         ffmpeg -i ... "[0:v][0:a][1:v][2:v]concat=2:a=1:v=1[video][audio]"
@@ -524,7 +527,7 @@ def crop(*args, w:str, h:str, x="0", y="0", keep_aspect=1):
     Also default keep_aspect of ffmpeg is 0, whereas I'm using 1 for making the 
     ratios of the input and the output same for more favourable use cases.
 
-    FFMPEG  :  https://ffmpeg.org/ffmpeg-filters.html#toc-crop
+    FFMPEG  :: https://ffmpeg.org/ffmpeg-filters.html#toc-crop
 
     Parameters
     ----------
@@ -575,6 +578,8 @@ def scale(*args, w:str, h:str):
     Creates a scale filter with basic arguments with output width and height.
     Takes in a single input and one output.
 
+    FFMPEG :: https://ffmpeg.org/ffmpeg-filters.html#toc-scale-1
+
     Parameters
     ----------
     args : any
@@ -619,12 +624,12 @@ def run(caller, display_command=True):
     Parameters
     ----------
     caller : OutputNode
-            calling node, mostly an OutputNode
+        calling node, mostly an OutputNode
 
     Returns
     -------
     tuple
-            log, error of just yield values
+        log, error of just yield values
     """
     if not isinstance(caller, OutputNode):
         raise OutputNodeMissingInRun
@@ -649,6 +654,42 @@ def run(caller, display_command=True):
         raise FFmpegException('ffmpeg', out, err)
 
     return out, err
+
+
+@stream()
+def setpts(*args, expr="PTS-STARTPTS"):
+    """
+    Function to set the presentation timestamps of the input frames based on the
+    expression according to the docs can have some expression that parses the
+    input stream to generate. The default value is PTS-STARPTS, i.e. the timestamps
+    starts from zero.
+
+    FFMPEG ::  https://ffmpeg.org/ffmpeg-filters.html#toc-setpts_002c-asetpts
+
+    Parameters
+    ---------
+    args : any
+        caller object
+    expr : str
+        expression for the timestamps
+
+    Returns
+    -------
+    GlobalNode
+        global node for the setpts command
+    """
+    input_node = args[0]
+    inputs = list()
+    inputs.append(_get_label_param(input_node))
+
+    node = GlobalNode(
+            inputs=inputs,
+            args=expr,
+            outputs=Label()
+            )
+
+    s.add(node)
+    return node
 
 
 @stream()

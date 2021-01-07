@@ -194,6 +194,9 @@ class FilterNode:
         """ Pretty print """
         result = list()
 
+        result.append("@filter %s " % self._filter)
+
+        result.append("input=")
         for inp in self._inputs:
             result.append("%s " % str(inp))
 
