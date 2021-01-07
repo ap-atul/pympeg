@@ -113,7 +113,7 @@ def _get_nodes_from_graph(graph):
         input_nodes,
         option_nodes,
         filter_nodes,
-        global_nodes, 
+        global_nodes,
         output_nodes
             ) = (
                     list(), list(),
@@ -191,10 +191,8 @@ def _get_command_from_graph(graph, cmd="ffmpeg"):
     input_nodes, option_nodes, filter_nodes, global_nodes, output_nodes = _get_nodes_from_graph(graph)
 
     # means that there is no filter
-    if len(filter_nodes) == 0:
+    if len(filter_nodes) == 0 and len(global_nodes) == 0:
         return _no_filter_command(input_nodes, output_nodes)
-
-    last_filter_node = filter_nodes.pop()
 
     # adding input nodes in fiter
     result.append(cmd)
@@ -214,8 +212,9 @@ def _get_command_from_graph(graph, cmd="ffmpeg"):
     for global_ in global_nodes:
         result.append(get_str_from_global(global_))
 
-    # last filter should not have a semicolon at the end
-    result.append(get_str_from_filter(last_filter_node).replace(";", ""))
+    # getting rid of the semicolon at the end of the filter complex
+    last_entry = result.pop()
+    result.append(last_entry.replace(";", ""))
     result.append('"')
 
     # multiple output nodes
@@ -236,7 +235,7 @@ def input(*args, name):
 
     Parameters
     ----------
-    
+
     name : str
         name and path of the file
 
@@ -367,6 +366,8 @@ def arg(caller=None, args=None, outputs=None, inputs=None):
     Then any function can be created and the command line argument can
     be directly stated using the names arguments (args), with inputs and outputs
 
+    Also, concat function is available that is easy to use.
+
     Examples
     --------
         inputs : [0:v][0:a][3:v][3:a]
@@ -488,13 +489,6 @@ def concat(*args, inputs:list, outputs:int):
     if inputs is None:
         raise Exception("Concat requires inputs argument.")
 
-    if outputs > 2:
-        raise Exception("Concat does not have output greater than two.")
-
-    if outputs > 1:
-        if len(inputs) % 2 != 0:
-            raise Exception("Concat requires inputs of length multiple of 2 input outputs is greater than 2.")
-
     _inputs = list()
     if inputs is not None:
         if isinstance(inputs, list):
@@ -505,16 +499,16 @@ def concat(*args, inputs:list, outputs:int):
 
     if outputs > 1:
         _outputs = list()
-        for i in range(2):
+        for i in range(outputs):
             _outputs.append(Label())
 
-        command = "concat=%s:v=%s:a=%s" % (len(_inputs), 1, 1)
+        command = "concat=n=%s:v=%s:a=%s" % (len(_inputs), 1, 1)
 
     else:
-        command = "concat=%s" % len(_inputs)
+        command = "concat=n=%s" % len(_inputs)
 
     # concat filter has different syntax so using Global Node
-    node = GlobalNode(inputs=inputs, args=command, outputs=outputs)
+    node = GlobalNode(inputs=_inputs, args=command, outputs=_outputs)
     s.add(node)
 
     return node
@@ -560,7 +554,6 @@ def run(caller, display_command=True):
         raise FFmpegException('ffmpeg', out, err)
 
     return out, err
-
 
 
 @stream()
