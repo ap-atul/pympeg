@@ -6,7 +6,6 @@ setup(
 	author='AP-Atul',
 	author_email='atulpatare99@gmail.com',
 	packages=['pympeg/'],
-	scripts=['pympeg/'],
 	url='https://github.com/AP-Atul/pympeg',
 	license='LICENSE',
 	description='A simple to use ffmpeg command line wrapper in python.',
