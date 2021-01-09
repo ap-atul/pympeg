@@ -15,7 +15,8 @@ from ._util import get_str_from_filter, get_str_from_global
 
 
 __all__ = ["input", "filter", "output", "arg", "run", "graph", "option",
-            "concat", "init", "scale", "crop", "setpts", "fade", "afade"]
+            "concat", "init", "scale", "crop", "setpts", "fade", "afade",
+            "command"]
 s = Stream()
 
 
@@ -649,7 +650,6 @@ def run(caller, display_command=True):
     if display_command:
         print(command)
 
-    return
     process = Popen(args=command,
                    shell=True,
                    stdout=PIPE,
@@ -801,3 +801,11 @@ def afade(*args, typ="in", st=0, d=5, curve="tri"):
 def graph(*args):
     """ Returns the chain of the nodes, printable for representations """
     return s.graph()
+
+@stream
+def command(*args):
+    """ Returns the command for the chain """
+    graph = s.graph()
+    command = _get_command_from_graph(graph)
+    return command
+
