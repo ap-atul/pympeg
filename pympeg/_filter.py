@@ -93,6 +93,9 @@ def _get_label_param(value):
     if isinstance(value, GlobalNode):
         return value[0]
 
+    if isinstance(value, OptionNode):
+        raise TypeMissing("Option nodes should be defined before the inputs.")
+
     else:
         raise TypeMissing("Filter requires an filter or input type argument")
 
@@ -148,7 +151,7 @@ def _get_nodes_from_graph(graph):
     return input_nodes, option_nodes, filter_nodes, global_nodes, output_nodes
 
 
-def _no_filter_command(input_nodes, output_nodes, cmd="ffmpeg"):
+def _no_filter_command(input_nodes, output_nodes, option_nodes, cmd="ffmpeg"):
     """
     Cases when there is no filter. Mostly when conversion is required.
 
@@ -161,8 +164,13 @@ def _no_filter_command(input_nodes, output_nodes, cmd="ffmpeg"):
 
     result.append(cmd)
     result.append(" -y")
+
     for inp in input_nodes:
         result.append(" -i %s " % inp.name)
+
+    # adding option nodes in filter
+    for opt in option_nodes:
+        result.append(" %s %s " % (opt.tag, opt.name))
 
     for out in output_nodes:
         result.append("%s  %s " % (out.map, out.name))
@@ -197,7 +205,7 @@ def _get_command_from_graph(graph, cmd="ffmpeg"):
 
     # means that there is no filter
     if len(filter_nodes) == 0 and len(global_nodes) == 0:
-        return _no_filter_command(input_nodes, output_nodes)
+        return _no_filter_command(input_nodes, output_nodes, option_nodes)
 
     # adding input nodes in fiter
     result.append(cmd)
@@ -650,6 +658,7 @@ def run(caller, display_command=True):
     if display_command:
         print(command)
 
+    return
     process = Popen(args=command,
                    shell=True,
                    stdout=PIPE,
@@ -802,7 +811,7 @@ def graph(*args):
     """ Returns the chain of the nodes, printable for representations """
     return s.graph()
 
-@stream
+@stream()
 def command(*args):
     """ Returns the command for the chain """
     graph = s.graph()
