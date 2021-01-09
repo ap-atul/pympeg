@@ -15,7 +15,7 @@ from ._util import get_str_from_filter, get_str_from_global
 
 
 __all__ = ["input", "filter", "output", "arg", "run", "graph", "option",
-            "concat", "init", "scale", "crop", "setpts"]
+            "concat", "init", "scale", "crop", "setpts", "fade", "afade"]
 s = Stream()
 
 
@@ -53,7 +53,7 @@ def _check_arg_type(args):
                 isinstance(arg_, list)
                 ):
             flag = True
-        break
+            break
 
     return flag
 
@@ -74,6 +74,9 @@ def _get_label_param(value):
     Label
         label to link with the node from ip - > op
     """
+    if value is None:
+        return Label()
+
     if isinstance(value, Label):
         return value
 
@@ -630,6 +633,11 @@ def run(caller, display_command=True):
     -------
     tuple
         log, error of just yield values
+
+    Raises
+    ------
+    OutputNodeMissingInRun
+        output node is required to run the ffmpeg command
     """
     if not isinstance(caller, OutputNode):
         raise OutputNodeMissingInRun
@@ -686,6 +694,102 @@ def setpts(*args, expr="setpts=PTS-STARTPTS"):
             inputs=inputs,
             args=expr,
             outputs=Label()
+            )
+
+    s.add(node)
+    return node
+
+
+@stream()
+def fade(*args, typ="in", st=0, d=5, color="black"):
+    """
+    Filter for applying fade in/out effects to the video stream, takes in type,
+    start time, duration, and color parameters.
+
+        ffmpeg -i .... "[0] afade=type=in:st=0:d=10:color=black[video]" ...
+
+    Parameters
+    ----------
+    args : any
+        caller object
+    typ : str
+        type of fade filter options :: (in, out)
+    st : int
+        start time of the fade effect, default is 0.
+    d : int
+        duration of fade, default is 5 sec
+    color : str
+        color of the fade, default black (ffmpeg default)
+
+    Raises
+    ------
+    TypeMissing
+        caller object is not of the accepted
+    """
+    if not _check_arg_type(args):
+        TypeMissing("Fade filter required an input or filter type object.")
+
+    input_node = args[0]
+    inputs = list()
+    inputs.append(_get_label_param(input_node))
+
+    node = FilterNode(
+            filter_name= fade.__name__,
+            params={
+                "type": typ,
+                "st": st,
+                "d": d,
+                "color": color
+                },
+            inputs=inputs
+            )
+
+    s.add(node)
+    return node
+
+
+@stream()
+def afade(*args, typ="in", st=0, d=5, curve="tri"):
+    """
+    Filter for applying fade in/out effects to the audio stream, takes in type,
+    start time, duration, and curve parameters.
+
+        ffmpeg -i .... "[0] afade=type=in:st=0:d=10:curve=tri[audio]" ...
+
+    Parameters
+    ----------
+    args : any
+        caller object
+    typ : str
+        type of fade filter options :: (in, out)
+    st : int
+        start time of the fade effect, default is 0.
+    d : int
+        duration of fade, default is 5 sec
+    curve : str
+        shape of the fade, default tri (triangular ffmpeg default)
+
+    Raises
+    ------
+    TypeMissing
+        caller object is not of the accepted
+    """
+    if not _check_arg_type(args):
+        TypeMissing("Audio Fade filter required an input or filter type object.")
+
+    input_node = args[0]
+    inputs = list()
+    inputs.append(_get_label_param(input_node))
+
+    node = FilterNode(
+            filter_name= afade.__name__,
+            params={
+                "type": typ,
+                "st": st,
+                "d": d,
+                "curve": curve
+                },
+            inputs=inputs
             )
 
     s.add(node)
