@@ -164,7 +164,7 @@ def _no_filter_command(input_nodes, output_nodes, cmd="ffmpeg"):
         result.append(" -i %s " % inp.name)
 
     for out in output_nodes:
-        result.append(" %s " % out.name)
+        result.append("%s  %s " % (out.map, out.name))
     return ''.join(result)
 
 
@@ -223,8 +223,9 @@ def _get_command_from_graph(graph, cmd="ffmpeg"):
 
     # multiple output nodes
     for out in output_nodes:
+        map_cmd = out.map
         for inp in out.inputs:
-            result.append(' -map "[%s]"' % inp.label)
+            result.append(' %s "[%s]"' % (map_cmd, inp.label))
         result.append(" %s " % out.name)
 
     return ''.join(result)
@@ -348,7 +349,7 @@ def output(*args, **kwargs):
     if "name" not in kwargs:
         return None
 
-    node = OutputNode(name=kwargs["name"])
+    node = OutputNode(**kwargs)
     inputs = args[0]
 
     if isinstance(inputs, list):

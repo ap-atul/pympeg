@@ -118,8 +118,9 @@ class OutputNode:
             list of the inputs for the node
     """
 
-    def __init__(self, name=None, inputs=None):
+    def __init__(self, name=None, inputs=None, map_cmd="-map"):
         self._name = name
+        self._map = map_cmd
         self._inputs = list()
 
         if inputs is not None:
@@ -128,7 +129,7 @@ class OutputNode:
     def __repr__(self):
         """ Pretty print """
         result = list()
-        result.append("@output %s :input=" % self._name)
+        result.append("@output %s %s :input=" % (self._name, self._map))
 
         for inp in self._inputs:
             result.append("%s " % inp)
@@ -141,6 +142,11 @@ class OutputNode:
         return self._name
 
     @property
+    def map(self):
+        """ Returns the map command of the node """
+        return self._map
+
+    @property
     def inputs(self):
         """ Returns the input labels of the node """
         return self._inputs
@@ -148,6 +154,11 @@ class OutputNode:
     def set_name(self, name):
         """ sets the name of the output file """
         self._name = name
+        return self
+
+    def set_map(self, map_cmd):
+        """ sets the map command for the output node """
+        self._map = map_cmd
         return self
 
     def add_input(self, label):
