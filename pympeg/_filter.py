@@ -12,6 +12,7 @@ from ._exceptions import *
 from ._node import (InputNode, FilterNode, Label,
                     OptionNode, OutputNode, GlobalNode, stream)
 from ._util import get_str_from_filter, get_str_from_global
+from . import ffpbar
 
 
 __all__ = ["input", "filter", "output", "arg", "run", "graph", "option",
@@ -658,20 +659,24 @@ def run(caller, display_command=True):
     if display_command:
         print(command)
 
-    return
-    process = Popen(args=command,
-                   shell=True,
-                   stdout=PIPE,
-                   stderr=STDOUT,
-                   universal_newlines=True)
+    progress = ffpbar.Progress()
+    process = Popen(
+            args=command,
+            shell=True,
+            stdout=PIPE,
+            stderr=STDOUT,
+            universal_newlines=True,
+            encoding='utf-8'
+            )
 
-    out, err = process.communicate()
-    code = process.poll()
+    for out in process.stdout:
+        progress.display(out)
+
+    code = process.wait()
 
     if code:
-        raise FFmpegException('ffmpeg', out, err)
-
-    return out, err
+        progress.clear()
+        FFmpegException('ffmpeg', "", code)
 
 
 @stream()
