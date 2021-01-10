@@ -9,5 +9,5 @@ setup(
 	url='https://github.com/AP-Atul/pympeg',
 	license='LICENSE',
 	description='A simple to use ffmpeg command line wrapper in python.',
-	long_description=open('README.md').read(),
+	long_description=open('README.md').read()
 )
