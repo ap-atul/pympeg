@@ -8,10 +8,15 @@ __all__ = ['probe']
 
 def probe(filename, cmd='ffprobe', timeout=None):
     """Runs the ffprobe on the given file and outputs in json format """
+
     args = [cmd, '-show_format', '-show_streams', '-of', 'json']
     args += [filename]
 
-    p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(
+            args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
 
     communicate_kwargs = {}
     if timeout is not None:

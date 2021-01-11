@@ -664,7 +664,7 @@ def run(caller, display_command=True):
             args=command,
             shell=True,
             stdout=PIPE,
-            stderr=STDOUT,
+            stderr=PIPE,
             universal_newlines=True,
             encoding='utf-8'
             )
@@ -676,7 +676,11 @@ def run(caller, display_command=True):
 
     if code:
         progress.clear()
-        FFmpegException('ffmpeg', "", code)
+        raise FFmpegException(
+                'ffmpeg',
+                ''.join(process.stderr.readlines()[-10: ]),
+                'Error code :: %s' % code
+            )
 
 
 @stream()

@@ -268,19 +268,19 @@ class FilterNode:
 
 class GlobalNode:
     """
-        GlobalNode helps in creating some argument based ffmpeg construct that
-        cannot be created using the FilterNode, this takes in the name of the function
-        and its parameter as the string
+    GlobalNode helps in creating some argument based ffmpeg construct that
+    cannot be created using the FilterNode, this takes in the name of the function
+    and its parameter as the string
 
-        Attributes
-        ----------
-        _args : str
-            the complete command
-        _inputs : list
-            input labels for the command
-        _outputs : list
-            output labels for the command
-        """
+    Attributes
+    ----------
+    _args : str
+        the complete command
+    _inputs : list
+        input labels for the command
+    _outputs : list
+        output labels for the command
+    """
 
     def __init__(self, inputs=None, args=None, outputs=None):
         self._args = args
