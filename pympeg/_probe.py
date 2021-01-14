@@ -1,3 +1,4 @@
+import os
 import json
 import subprocess
 
@@ -8,6 +9,9 @@ __all__ = ['probe']
 
 def probe(filename, cmd='ffprobe', timeout=None):
     """Runs the ffprobe on the given file and outputs in json format """
+
+    if not os.path.isfile(filename):
+        raise FileExistsError(f"Input file {filename} does not exists.")
 
     args = [cmd, '-show_format', '-show_streams', '-of', 'json']
     args += [filename]
