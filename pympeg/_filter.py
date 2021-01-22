@@ -17,7 +17,7 @@ from . import ffpbar
 
 
 __all__ = ["input", "filter", "output", "arg", "run", "graph", "option",
-            "concat", "init", "scale", "crop", "setpts", "fade", "afade",
+            "concat", "init", "scale", "crop", "setpts", "asetpts" "fade", "afade",
             "command"]
 s = Stream()
 
@@ -696,6 +696,41 @@ def setpts(*args, expr="setpts=PTS-STARTPTS"):
     Function to set the presentation timestamps of the input frames based on the
     expression according to the docs can have some expression that parses the
     input stream to generate. The default value is PTS-STARPTS, i.e. the timestamps
+    starts from zero.
+
+    FFMPEG ::  https://ffmpeg.org/ffmpeg-filters.html#toc-setpts_002c-asetpts
+
+    Parameters
+    ---------
+    args : any
+        caller object
+    expr : str
+        expression for the timestamps
+
+    Returns
+    -------
+    GlobalNode
+        global node for the setpts command
+    """
+    input_node = args[0]
+    inputs = list()
+    inputs.append(_get_label_param(input_node))
+
+    node = GlobalNode(
+            inputs=inputs,
+            args=expr,
+            outputs=Label()
+            )
+
+    s.add(node)
+    return node
+
+@stream()
+def asetpts(*args, expr="asetpts=N/SR/TB"):
+    """
+    Function to set the presentation timestamps of the input frames based on the
+    expression according to the docs can have some expression that parses the
+    input stream to generate. The default value is N/SR/TB, i.e. the timestamps
     starts from zero.
 
     FFMPEG ::  https://ffmpeg.org/ffmpeg-filters.html#toc-setpts_002c-asetpts
