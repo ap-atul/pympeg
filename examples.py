@@ -5,7 +5,7 @@ operation = (
         pympeg.input(name="input.mp4")
         .input(name="FFMETADATA")
         .output(name="out.mp4", map_cmd="-map_metadata")
-        .run()
+        .graph()
 )
 
 # fade effect
