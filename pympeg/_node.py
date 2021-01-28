@@ -69,8 +69,7 @@ class InputNode:
         if name is None or output is None:
             raise InputParamsMissing
 
-        self._name = name
-        self._output = str(output)
+        self._name, self._output = name, str(output)
 
     def __repr__(self):
         """ Pretty print """
@@ -119,9 +118,7 @@ class OutputNode:
     """
 
     def __init__(self, name=None, inputs=None, map_cmd="-map"):
-        self._name = name
-        self._map = map_cmd
-        self._inputs = list()
+        self._name, self._map, self._inputs = name, map_cmd, list()
 
         if inputs is not None:
             self._inputs = inputs
@@ -187,10 +184,7 @@ class FilterNode:
     """
 
     def __init__(self, filter_name=None, params=None, inputs=None, outputs=1):
-        self._filter = filter_name
-        self._params = dict()
-        self._inputs = list()
-        self._outputs = list()
+        self._filter, self._params, self._inputs, self._outputs = filter_name, dict(), list(), list()
 
         for _ in range(outputs):
             self._outputs.append(Label())
@@ -204,7 +198,6 @@ class FilterNode:
     def __repr__(self):
         """ Pretty print """
         result = list()
-
         result.append("@filter %s " % self._filter)
 
         result.append("input=")
@@ -283,9 +276,7 @@ class GlobalNode:
     """
 
     def __init__(self, inputs=None, args=None, outputs=None):
-        self._args = args
-        self._inputs = list()
-        self._outputs = list()
+        self._arg, self._inputs, self._outputs = args, list(), list()
 
         if inputs is not None:
             if isinstance(inputs, list):
@@ -355,10 +346,7 @@ class OptionNode:
     def __init__(self, tag=None, name=None, output=None):
         if tag is None or name is None:
             raise OptionNodeParamMissing
-
-        self._tag = tag
-        self._name = name
-        self._output = output
+        self._tag, self._name, self._output = tag, name, output
 
     def __repr__(self):
         """ Pretty print """
