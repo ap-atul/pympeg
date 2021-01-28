@@ -16,8 +16,7 @@ class Stream:
     """
 
     def __init__(self):
-        self._stream = list()
-        self.count = 0
+        self._stream, self.count = list(), 0
 
     def add(self, node):
         """ Add a node type to the chain """
