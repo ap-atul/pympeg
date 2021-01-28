@@ -276,7 +276,7 @@ class GlobalNode:
     """
 
     def __init__(self, inputs=None, args=None, outputs=None):
-        self._arg, self._inputs, self._outputs = args, list(), list()
+        self._args, self._inputs, self._outputs = args, list(), list()
 
         if inputs is not None:
             if isinstance(inputs, list):
