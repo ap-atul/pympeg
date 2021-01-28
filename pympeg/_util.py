@@ -2,7 +2,6 @@
 
 import string
 from random import sample
-from ._node import *
 
 
 def gen_labels(n=1):
