@@ -866,6 +866,6 @@ def graph(*args):
 def command(*args):
     """ Returns the command for the chain """
     graph = s.graph()
-    command = _get_command_from_graph(graph)
+    command = Stringify.get_command_from_graph(graph)
     return command
 
