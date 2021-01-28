@@ -106,11 +106,11 @@ class Stringify:
             if isinstance(node, FilterNode):
                 if filter_cnt == 0:
                     command.append('-filter_complex "')
-                else:
-                    command.append(';')
+                    filter_cnt += 1
             if isinstance(node, OutputNode):
                 last = command.pop()
                 command.append(last.replace(";", ""))
+                command.append('"')
             command.append(get_str_from_node(node))
 
         return ' '.join(command)
