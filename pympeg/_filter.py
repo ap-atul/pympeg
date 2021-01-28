@@ -8,11 +8,10 @@ filter and is understandable by the ffmpeg command line.
 import os
 from subprocess import Popen, PIPE, STDOUT
 
-from ._builder import Stream
+from ._builder import *
 from ._exceptions import *
 from ._node import (InputNode, FilterNode, Label,
                     OptionNode, OutputNode, GlobalNode, stream)
-from ._util import get_str_from_filter, get_str_from_global
 from . import ffpbar
 
 
@@ -100,146 +99,6 @@ def _get_label_param(value):
 
     else:
         raise TypeMissing("Filter requires an filter or input type argument")
-
-
-def _get_nodes_from_graph(graph):
-    """
-    Separates the types of the nodes. Since, the links are
-    directly attached to the node via the Label object and only
-    the label matters at the end of the command, so distributing
-    the nodes based on types helps create a command line argument.
-
-    Parameters
-    ----------
-    graph : Sized, list-type
-        output at the end of the run function. A list of all nodes
-
-    Returns
-    -------
-    tuple
-        distribution of all the nodes via their types
-    """
-    (
-        input_nodes,
-        option_nodes,
-        filter_nodes,
-        global_nodes,
-        output_nodes
-            ) = (
-                    list(), list(),
-                    list(), list(),
-                    list()
-                )
-
-    for node in graph:
-        if isinstance(node, InputNode):
-            input_nodes.append(node)
-
-        if isinstance(node, FilterNode):
-            filter_nodes.append(node)
-
-        if isinstance(node, OutputNode):
-            output_nodes.append(node)
-
-        if isinstance(node, GlobalNode):
-            global_nodes.append(node)
-
-        if isinstance(node, OptionNode):
-            option_nodes.append(node)
-
-    node_len = len(input_nodes) + len(option_nodes) + len(filter_nodes) + len(global_nodes) + len(output_nodes)
-    assert node_len == len(graph)
-
-    return input_nodes, option_nodes, filter_nodes, global_nodes, output_nodes
-
-
-def _no_filter_command(input_nodes, output_nodes, option_nodes, cmd="ffmpeg"):
-    """
-    Cases when there is no filter. Mostly when conversion is required.
-
-    Example
-    -------
-    ex: convert .mp4 to .wav
-        ffmpeg -y -i example.mp4 example.wav
-    """
-    result = list()
-
-    result.append(cmd)
-    result.append(" -y")
-
-    for inp in input_nodes:
-        result.append(" -i %s " % inp.name)
-
-    # adding option nodes in filter
-    for opt in option_nodes:
-        result.append(" %s %s " % (opt.tag, opt.name))
-
-    for out in output_nodes:
-        result.append("%s  %s " % (out.map, out.name))
-    return ''.join(result)
-
-
-def _get_command_from_graph(graph, cmd="ffmpeg"):
-    """
-    Generates the command line for the graph, this command is
-    then ran using subprocess which will raise any exception or
-    error on the ffmpeg side.
-
-    Parameters
-    ----------
-    graph : list-type
-        nodes from the end of the run function
-    cmd : str
-        ffmpeg default command, may changed based on alias
-
-    Returns
-    -------
-    str
-        string of the command to execute.
-
-    Raises
-    -------
-    FFmpegException
-        raised when the subprocess function fails.
-    """
-    result = list()
-    input_nodes, option_nodes, filter_nodes, global_nodes, output_nodes = _get_nodes_from_graph(graph)
-
-    # means that there is no filter
-    if len(filter_nodes) == 0 and len(global_nodes) == 0:
-        return _no_filter_command(input_nodes, output_nodes, option_nodes)
-
-    # adding input nodes in fiter
-    result.append(cmd)
-    for inp in input_nodes:
-        result.append(" -i %s " % inp.name)
-
-    # adding option nodes in filter
-    for opt in option_nodes:
-        result.append(" %s %s" % (opt.tag, opt.name))
-
-    # adding filter nodes in filter
-    result.append(' -y -filter_complex "')
-    for filter_ in filter_nodes:
-        result.append(get_str_from_filter(filter_))
-
-    # adding global nodes
-    for global_ in global_nodes:
-        result.append(get_str_from_global(global_))
-
-    # getting rid of the semicolon at the end of the filter complex
-    last_entry = result.pop()
-    result.append(last_entry.replace(";", ""))
-    result.append('"')
-
-    # multiple output nodes
-    for out in output_nodes:
-        map_cmd = out.map
-        for inp in out.inputs:
-            result.append(' %s "[%s]"' % (map_cmd, inp.label))
-        result.append(" %s " % out.name)
-
-    return ''.join(result)
 
 
 @stream()
@@ -725,6 +584,7 @@ def setpts(*args, expr="setpts=PTS-STARTPTS"):
     s.add(node)
     return node
 
+
 @stream()
 def asetpts(*args, expr="asetpts=N/SR/TB"):
     """
@@ -862,10 +722,10 @@ def graph(*args):
     """ Returns the chain of the nodes, printable for representations """
     return s.graph()
 
+
 @stream()
 def command(*args):
     """ Returns the command for the chain """
     graph = s.graph()
     command = Stringify.get_command_from_graph(graph)
     return command
-
