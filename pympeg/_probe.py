@@ -32,5 +32,3 @@ def probe(filename, cmd='ffprobe', timeout=None):
         raise ProbeException('ffprobe', out, err)
 
     return json.loads(out.decode('utf-8'))
-
-
