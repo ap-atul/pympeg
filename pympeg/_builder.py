@@ -21,12 +21,10 @@ def get_str_from_filter(filter):
 
     for inp in filter.inputs:
         result.append("[%s]" % inp.label)
-
     result.append(" %s=%s " % (filter.name, get_str_from_params(filter.params)))
 
     for out in filter.outputs:
         result.append("[%s]" % out.label)
-
     result.append(";")
 
     return ''.join(result)
@@ -38,12 +36,10 @@ def get_str_from_global(node):
 
     for inp in node.inputs:
         result.append("[%s]" % inp.label)
-
     result.append("%s" % node.name)
 
     for out in node.outputs:
         result.append("[%s]" % out.label)
-
     result.append(";")
 
     return ''.join(result)
@@ -98,9 +94,8 @@ class Stream:
 class Stringify:
     @staticmethod
     def get_command_from_graph(nodes, cmd='ffmpeg'):  # nodes is a list 
-        command = list()
+        command, filter_cnt = list(), 0
         command.append(cmd)
-        filter_cnt = 0
 
         for node in nodes:
             if isinstance(node, FilterNode):

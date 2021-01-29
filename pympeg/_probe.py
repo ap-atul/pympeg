@@ -27,7 +27,6 @@ def probe(filename, cmd='ffprobe', timeout=None):
         communicate_kwargs['timeout'] = timeout
 
     out, err = p.communicate(**communicate_kwargs)
-
     if p.returncode != 0:
         raise ProbeException('ffprobe', out, err)
 

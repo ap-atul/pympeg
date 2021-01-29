@@ -305,7 +305,7 @@ def arg(caller=None, args=None, outputs=None, inputs=None):
 @stream()
 def option(*args, tag=None, name=None, output=None):
     """
-    Adds a option node before the filters if any, this options can be 
+    Adds a option node before the filters if any, this options can be
     anything ffmpeg option defined as the tag and the name of the option
     Options like -f for file and other supported options.
 
