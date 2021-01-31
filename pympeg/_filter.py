@@ -12,7 +12,6 @@ from ._builder import *
 from ._exceptions import *
 from ._node import (InputNode, FilterNode, Label,
                     OptionNode, OutputNode, GlobalNode, stream)
-from . import ffpbar
 
 
 __all__ = ["input", "filter", "output", "arg", "run", "graph", "option",
@@ -43,8 +42,6 @@ def _check_arg_type(args):
     bool
         passed/ fail criteria
     """
-    flag = False
-
     for arg_ in args:
         if (
                 isinstance(arg_, InputNode) or
@@ -54,10 +51,8 @@ def _check_arg_type(args):
                 isinstance(arg_, Label) or
                 isinstance(arg_, list)
                 ):
-            flag = True
-            break
-
-    return flag
+            return True            
+    return False
 
 
 def _get_label_param(value):
@@ -135,7 +130,6 @@ def input(*args, name):
 
     # adding to the stream
     s.add(node).count += 1
-
     return node
 
 
@@ -448,7 +442,6 @@ def crop(*args, w:str, h:str, x="0", y="0", keep_aspect=1):
             )
 
     s.add(node)
-
     return node
 
 
@@ -490,7 +483,6 @@ def scale(*args, w:str, h:str):
             )
 
     s.add(node)
-
     return node
 
 
@@ -727,5 +719,4 @@ def graph(*args):
 def command(*args):
     """ Returns the command for the chain """
     graph = s.graph()
-    command = Stringify.get_command_from_graph(graph)
-    return command
+    return Stringify.get_command_from_graph(graph)

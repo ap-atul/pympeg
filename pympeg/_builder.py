@@ -4,9 +4,7 @@ from ._node import *
 
 def get_str_from_params(params: dict):
     """ Returns string from the parameters """
-    result = list()
-    keys = list(params.keys())
-    length = len(keys)
+    result, keys, length = list(), list(params.keys()), len(keys)
 
     result.append("%s=%s" % (keys[0], params[keys[0]]))
     for i in range(1, length):
