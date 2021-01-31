@@ -91,7 +91,6 @@ def _get_label_param(value):
 
     if isinstance(value, OptionNode):
         raise TypeMissing("Option nodes should be defined before the inputs.")
-
     else:
         raise TypeMissing("Filter requires an filter or input type argument")
 
@@ -327,8 +326,8 @@ def option(*args, tag=None, name=None, output=None):
         outputs.append(_get_label_param(output))
 
     node = OptionNode(tag, name, output)
-    s.add(node)
-
+    
+	s.add(node)
     return node
 
 
@@ -380,7 +379,6 @@ def concat(*args, inputs:list, outputs:int):
             _outputs.append(Label())
 
         command = "concat=n=%d:v=%d:a=%d" % (len(_inputs) / 2, 1, 1)
-
     else:
         command = "concat=n=%d" % len(_inputs)
 
@@ -718,5 +716,4 @@ def graph(*args):
 @stream()
 def command(*args):
     """ Returns the command for the chain """
-    graph = s.graph()
-    return Stringify.get_command_from_graph(graph)
+    return Stringify.get_command_from_graph(s.graph())
