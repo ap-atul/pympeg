@@ -66,9 +66,7 @@ class FFmpegException(Exception):
     ffmpeg output.
     """
     def __init__(self, cmd, stdout, stderr):
-        self._stdout = stdout
-        self._stderr = stderr
+        self._stdout, self._stderr = stdout, stderr
 
     def __str__(self):
         return '%s %s' % (self._stdout, self._stderr)
-
