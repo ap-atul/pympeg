@@ -22,7 +22,7 @@ def probe(filename, cmd='ffprobe', timeout=None):
             stderr=subprocess.PIPE
         )
 
-    communicate_kwargs = {}
+    communicate_kwargs = dict()
     if timeout is not None:
         communicate_kwargs['timeout'] = timeout
 
