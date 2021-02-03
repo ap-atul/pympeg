@@ -18,9 +18,8 @@ class Label:
 
     def __init__(self, label=None):
         if label is None:
-            self._label = gen_labels()
-        else:
-            self._label = label
+           label = gen_labels()
+        self._label = label
 
     def __repr__(self):
         """ Pretty print """
@@ -185,9 +184,7 @@ class FilterNode:
 
     def __init__(self, filter_name=None, params=None, inputs=None, outputs=1):
         self._filter, self._params, self._inputs, self._outputs = filter_name, dict(), list(), list()
-
-        for _ in range(outputs):
-            self._outputs.append(Label())
+		self._outputs = [Label() for _ in range(outputs)]
 
         if inputs is not None:
             self._inputs = inputs
